@@ -9,19 +9,20 @@ import { Experiences } from './sections/Experiences'
 import { Testimonial } from './sections/Testimonial'
 import { Faq } from './sections/Faq'
 import { FinalCta } from './sections/FinalCta'
-import { useCinematicMode } from './hooks/useEnvironment'
+import { useAmbientVideoMode, useCinematicMode } from './hooks/useEnvironment'
 import { useSmoothScroll } from './hooks/useSmoothScroll'
 import { ScrollTrigger } from './lib/gsap'
 import { scenes } from './content/site'
 
 export default function App() {
   const cinematic = useCinematicMode()
+  const ambientVideo = useAmbientVideoMode()
   useSmoothScroll(cinematic)
 
   // Trocar de modo remonta as cenas: os gatilhos precisam remedir as alturas.
   useEffect(() => {
     ScrollTrigger.refresh()
-  }, [cinematic])
+  }, [cinematic, ambientVideo])
 
   return (
     <>
@@ -35,16 +36,26 @@ export default function App() {
       <Nav />
 
       <main>
-        <Hero cinematic={cinematic} />
+        <Hero cinematic={cinematic} ambientVideo={ambientVideo} />
 
         {scenes.slice(0, 2).map((scene) => (
-          <SceneSection key={scene.id} scene={scene} cinematic={cinematic} />
+          <SceneSection
+            key={scene.id}
+            scene={scene}
+            cinematic={cinematic}
+            ambientVideo={ambientVideo}
+          />
         ))}
 
         <Stats />
 
         {scenes.slice(2, 3).map((scene) => (
-          <SceneSection key={scene.id} scene={scene} cinematic={cinematic} />
+          <SceneSection
+            key={scene.id}
+            scene={scene}
+            cinematic={cinematic}
+            ambientVideo={ambientVideo}
+          />
         ))}
 
         {/* Respiro editorial entre o deck (dia) e a piscina (entardecer):
@@ -52,7 +63,12 @@ export default function App() {
         <Testimonial />
 
         {scenes.slice(3).map((scene) => (
-          <SceneSection key={scene.id} scene={scene} cinematic={cinematic} />
+          <SceneSection
+            key={scene.id}
+            scene={scene}
+            cinematic={cinematic}
+            ambientVideo={ambientVideo}
+          />
         ))}
 
         <Villas />
