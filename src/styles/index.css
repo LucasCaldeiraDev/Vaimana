@@ -1,0 +1,108 @@
+@import 'tailwindcss';
+
+@theme {
+  /* Paleta — âncora escura do oceano, base areia, latão como único acento. */
+  --color-ink: #0b1d24;
+  --color-ink-soft: #17323c;
+  --color-bone: #f6f1e9;
+  --color-sand: #e8dfd2;
+  --color-lagoon: #1e6e78;
+  --color-brass: #b08d4f;
+
+  --font-display: 'Cormorant Garamond', 'Times New Roman', serif;
+  --font-sans: 'Jost', ui-sans-serif, system-ui, sans-serif;
+
+  /* Alturas de pin das cenas, em múltiplos de viewport. */
+  --scene-scrub: 300vh;
+}
+
+@layer base {
+  html {
+    /* Lenis controla a rolagem; scroll-behavior nativo causaria conflito. */
+    scroll-behavior: auto;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    margin: 0;
+    background-color: var(--color-ink);
+    color: var(--color-bone);
+    font-family: var(--font-sans);
+    font-weight: 300;
+    /* Nenhuma seção deve empurrar a página lateralmente. */
+    overflow-x: hidden;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    font-weight: 300;
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-brass);
+    outline-offset: 3px;
+  }
+
+  ::selection {
+    background: var(--color-brass);
+    color: var(--color-ink);
+  }
+}
+
+@layer components {
+  /* Sobrenome tipográfico das seções: caixa alta, tracking largo, discreto. */
+  .eyebrow {
+    font-size: 0.6875rem;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    font-weight: 400;
+  }
+
+  /* Véu de legibilidade sobre vídeo. Direção varia por alinhamento do texto. */
+  .veil-left {
+    background: linear-gradient(
+      100deg,
+      rgb(11 29 36 / 0.82) 0%,
+      rgb(11 29 36 / 0.55) 38%,
+      rgb(11 29 36 / 0.08) 68%,
+      rgb(11 29 36 / 0) 100%
+    );
+  }
+
+  .veil-right {
+    background: linear-gradient(
+      260deg,
+      rgb(11 29 36 / 0.82) 0%,
+      rgb(11 29 36 / 0.55) 38%,
+      rgb(11 29 36 / 0.08) 68%,
+      rgb(11 29 36 / 0) 100%
+    );
+  }
+
+  .veil-center {
+    background: radial-gradient(
+      ellipse 80% 65% at 50% 55%,
+      rgb(11 29 36 / 0.72) 0%,
+      rgb(11 29 36 / 0.35) 55%,
+      rgb(11 29 36 / 0.05) 100%
+    );
+  }
+}
+
+/* Sem animação: nada se move, tudo permanece legível e no lugar final. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
