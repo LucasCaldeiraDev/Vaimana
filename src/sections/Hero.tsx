@@ -4,9 +4,9 @@ import { gsap } from '../lib/gsap'
 import { useReducedMotion } from '../hooks/useEnvironment'
 import { hero } from '../content/site'
 
-type Props = { cinematic: boolean; ambientVideo: boolean }
+type Props = { cinematic: boolean }
 
-export function Hero({ cinematic, ambientVideo }: Props) {
+export function Hero({ cinematic }: Props) {
   const copyRef = useRef<HTMLDivElement>(null)
   const reduced = useReducedMotion()
 
@@ -41,7 +41,6 @@ export function Hero({ cinematic, ambientVideo }: Props) {
         poster={hero.poster}
         alt={hero.alt}
         cinematic={cinematic}
-        ambientVideo={ambientVideo}
         veil="center"
         eager
         fadeIn={false}

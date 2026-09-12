@@ -2,7 +2,7 @@ import { ScrollStage } from '../components/ScrollStage'
 import { Reveal } from '../components/Reveal'
 import { scenes, type Scene } from '../content/site'
 
-type Props = { scene: Scene; cinematic: boolean; ambientVideo: boolean }
+type Props = { scene: Scene; cinematic: boolean }
 
 const placement: Record<Scene['align'], string> = {
   left: 'items-end justify-start text-left',
@@ -10,7 +10,7 @@ const placement: Record<Scene['align'], string> = {
   center: 'items-center justify-center text-center',
 }
 
-export function SceneSection({ scene, cinematic, ambientVideo }: Props) {
+export function SceneSection({ scene, cinematic }: Props) {
   const headingId = `${scene.id}-titulo`
   // Capítulo 01 é o herói; as cenas continuam a contagem a partir de 02.
   const chapter = String(scenes.findIndex((s) => s.id === scene.id) + 2).padStart(2, '0')
@@ -22,7 +22,6 @@ export function SceneSection({ scene, cinematic, ambientVideo }: Props) {
         poster={scene.poster}
         alt={scene.alt}
         cinematic={cinematic}
-        ambientVideo={ambientVideo}
         veil={scene.align}
         intro={{ index: chapter, label: scene.eyebrow }}
       >

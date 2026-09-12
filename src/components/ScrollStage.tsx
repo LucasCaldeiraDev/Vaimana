@@ -8,14 +8,13 @@ type Props = {
   videoSrc: string
   poster: string
   alt: string
-  /** Quando falso, a cena vira uma seção estática com o poster. */
-  cinematic: boolean
   /**
-   * Modo compacto com vídeo: a cena continua sendo uma seção de uma tela
-   * (sem pin), mas reproduz o clipe uma vez ao entrar na viewport em vez de
-   * mostrar só o poster parado. Ignorado quando `cinematic` é verdadeiro.
+   * Quando falso, a cena vira uma seção estática com o poster — reservado a
+   * `prefers-reduced-motion` e hardware/rede incapazes de vídeo. NÃO depende
+   * do tamanho de tela: o scrub por scroll roda em qualquer largura, celular
+   * incluído. O vídeo nunca toca sozinho, só quando a rolagem avança.
    */
-  ambientVideo?: boolean
+  cinematic: boolean
   /** Altura de rolagem consumida pela narrativa da cena. */
   scrubHeight?: string
   veil?: Veil
@@ -57,7 +56,6 @@ export function ScrollStage({
   poster,
   alt,
   cinematic,
-  ambientVideo = false,
   scrubHeight = 'var(--scene-scrub)',
   veil = 'center',
   eager = false,
@@ -72,13 +70,10 @@ export function ScrollStage({
   const introRef = useRef<HTMLDivElement>(null)
   const [mounted, setMounted] = useState(eager)
   const [painted, setPainted] = useState(false)
-  const usesVideo = cinematic || ambientVideo
 
-  // Só anexa o src quando a cena está a menos de uma tela de distância —
-  // vale tanto para o scrub cinematográfico quanto para o loop do modo
-  // compacto com vídeo.
+  // Só anexa o src quando a cena está a menos de uma tela de distância.
   useEffect(() => {
-    if (!usesVideo || mounted) return
+    if (!cinematic || mounted) return
     const node = sectionRef.current
     if (!node) return
 
@@ -94,9 +89,10 @@ export function ScrollStage({
 
     observer.observe(node)
     return () => observer.disconnect()
-  }, [usesVideo, mounted])
+  }, [cinematic, mounted])
 
-  // Liga o progresso da rolagem ao tempo do vídeo.
+  // Liga o progresso da rolagem ao tempo do vídeo — em qualquer tamanho de
+  // tela. O toque move `currentTime` do mesmo jeito que a roda do mouse.
   useEffect(() => {
     if (!cinematic || !mounted) return
     const video = videoRef.current
@@ -146,56 +142,6 @@ export function ScrollStage({
       tween?.kill()
     }
   }, [cinematic, mounted])
-
-  // Modo compacto com vídeo: sem scroll para dirigir o tempo (toque não faz
-  // seek confiável), então o clipe toca uma única vez assim que monta e para
-  // no último quadro — sozinho, sem loop, para não expor o corte entre o
-  // quadro final de uma composição e o inicial da próxima a cada repetição.
-  useEffect(() => {
-    if (!ambientVideo || cinematic || !mounted) return
-    const video = videoRef.current
-    if (!video) return
-
-    // Autoplay mudo exige a propriedade (não só o atributo) ligada antes do
-    // play() em alguns navegadores — o React nem sempre sincroniza as duas.
-    video.muted = true
-    video.defaultMuted = true
-
-    // Uma única chamada a play() no momento do efeito pode cair num instante
-    // em que o vídeo ainda não tem dados suficientes, ou em que a aba está
-    // momentaneamente em segundo plano (o Chrome pausa vídeo mudo sem áudio
-    // nessa condição para economizar energia — AbortError "paused to save
-    // power"). Repetir em 'loadeddata', 'canplay' e ao voltar o foco da aba
-    // cobre as janelas de corrida mais comuns; cada chamada extra é
-    // inofensiva se a reprodução já estiver rolando.
-    const tryPlay = () => {
-      video.play().catch(() => {
-        // Autoplay recusado (raro, mudo+playsInline) ou aba em segundo
-        // plano no instante da chamada: fica no poster até a próxima
-        // tentativa.
-      })
-    }
-
-    const onReady = () => {
-      setPainted(true)
-      tryPlay()
-    }
-    const onVisible = () => {
-      if (document.visibilityState === 'visible') tryPlay()
-    }
-
-    video.addEventListener('loadeddata', onReady)
-    video.addEventListener('canplay', tryPlay)
-    document.addEventListener('visibilitychange', onVisible)
-
-    tryPlay()
-
-    return () => {
-      video.removeEventListener('loadeddata', onReady)
-      video.removeEventListener('canplay', tryPlay)
-      document.removeEventListener('visibilitychange', onVisible)
-    }
-  }, [ambientVideo, cinematic, mounted])
 
   // Cortina do dip-to-black: gatilhos próprios, independentes do vídeo — o
   // progresso cru da rolagem (sem o atraso do scrub) dirige a opacidade.
@@ -343,6 +289,7 @@ export function ScrollStage({
   )
 
   // Sem modo cinematográfico não há pin: a cena ocupa uma tela e segue adiante.
+  // Reservado a prefers-reduced-motion e hardware/rede incapazes — poster puro.
   if (!cinematic) {
     return (
       <div ref={sectionRef} className="relative h-[100svh]">
@@ -358,24 +305,6 @@ export function ScrollStage({
           {...({ fetchpriority: eager ? 'high' : 'auto' } as Record<string, string>)}
             className="absolute inset-0 h-full w-full object-cover"
           />
-
-          {ambientVideo && mounted ? (
-            <video
-              ref={videoRef}
-              src={videoSrc}
-              poster={poster}
-              muted
-              playsInline
-              autoPlay
-              preload="auto"
-              aria-hidden="true"
-              tabIndex={-1}
-              className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ${
-                painted ? 'opacity-100' : 'opacity-0'
-              }`}
-            />
-          ) : null}
-
           {veil !== 'none' ? (
             <div className={`absolute inset-0 ${veilClass[veil]}`} aria-hidden="true" />
           ) : null}
